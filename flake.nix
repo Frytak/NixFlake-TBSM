@@ -72,6 +72,16 @@
                     type = lib.types.listOf lib.types.attrs;
                     description = "`.desktop` session entries.";
                     default = [];
+                    example = [
+                        {
+                            Name = "Hyprland";
+                            Comment = "Start the Hyprland Wayland Compositor";
+                            Exec = "\${pkgs.hyprland}/bin/Hyprland";
+                            Type = "Application";
+                            DesktopNames = "Hyprland";
+                            Keywords = "wayland;compositor;hyprland;";
+                        }
+                    ];
                 };
             };
 
@@ -112,16 +122,19 @@
                     default = false;
                 };
 
-                autoStart = lib.mkOption {
-                    type = lib.types.bool;
-                    description = "Makes TBSM auto start upon loging into a TTY.";
-                    default = false;
-                };
+                autoStart = {
+                    enable = lib.mkOption {
+                        type = lib.types.bool;
+                        description = "Makes TBSM auto start upon loging into a TTY.";
+                        default = false;
+                    };
 
-                allowedTtys = lib.mkOption {
-                    type = lib.types.listOf lib.types.str;
-                    default = [ "/dev/tty1" ];
-                    description = "List of TTYs where TBSM should launch, or 'all' to launch on all TTYs.";
+                    allowedTtys = lib.mkOption {
+                        type = lib.types.listOf lib.types.str;
+                        description = "List of TTYs where TBSM should launch, or 'all' to launch on all TTYs.";
+                        default = [ "/dev/tty1" ];
+                        example = [ "all" ];
+                    };
                 };
 
                 config = lib.mkOption {
@@ -139,7 +152,7 @@
             config = 
             let
                 tbsm = self.packages.${pkgs.system}.tbsm;
-                allowedTtys = lib.strings.concatMapStrings (x: " " + x) config.tbsm.allowedTtys;
+                allowedTtys = lib.strings.concatMapStrings (x: " " + x) config.tbsm.autoStart.allowedTtys;
             in
             lib.mkIf config.tbsm.enable {
                 environment.systemPackages = [ tbsm ];
@@ -151,7 +164,7 @@
                 };
 
                 # Launch TBSM on TTY1 after login
-                environment.shellInit = lib.mkIf config.tbsm.autoStart ''
+                environment.shellInit = lib.mkIf config.tbsm.autoStart.enable ''
                     # Launch TBSM on specific TTYs after login
                     if [ -z "$DISPLAY" ]; then
                         allowed_ttys="${allowedTtys}"
