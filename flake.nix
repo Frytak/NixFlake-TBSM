@@ -83,6 +83,13 @@
                         }
                     ];
                 };
+
+                defaultSession = lib.mkOption {
+                    type = lib.types.nullOr lib.types.str;
+                    description = "Default session";
+                    default = null;
+                    example = "Hyprland";
+                };
             };
 
             config = 
@@ -103,7 +110,10 @@
                             acc + "${name}=${value}\n"
                         ) "[Desktop Entry]\n" entry;
                     }
-                ) {} config.tbsm.sessions;
+                ) {} config.tbsm.sessions //
+                lib.attrsets.optionalAttrs (config.tbsm.defaultSession != null) {
+                    ".config/tbsm/000-default-session.desktop".source = "${config.home.homeDirectory}/.config/tbsm/whitelist/${config.tbsm.defaultSession}.desktop";
+                };
             };
         };
 
@@ -163,7 +173,7 @@
                     "xdg/tbsm/tbsm.conf".text = config.tbsm.config;
                 };
 
-                # Launch TBSM on TTY1 after login
+                # Launch TBSM on specific TTYs after login
                 environment.shellInit = lib.mkIf config.tbsm.autoStart.enable ''
                     # Launch TBSM on specific TTYs after login
                     if [ -z "$DISPLAY" ]; then

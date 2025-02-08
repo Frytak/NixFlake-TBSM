@@ -42,6 +42,7 @@ You will need to create `.desktop` entries at `~/.config/tbsm/whitelist`
             theme=""
         '';
 
+        defaultSession = "Hyprland";
         sessions = [
             {
                 Name = "Hyprland";
@@ -104,6 +105,7 @@ You will need to create `.desktop` entries at `~/.config/tbsm/whitelist`
             theme=""
         '';
 
+        defaultSession = "Hyprland";
         sessions = [
             {
                 Name = "Hyprland";
