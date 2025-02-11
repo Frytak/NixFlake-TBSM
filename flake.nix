@@ -95,6 +95,22 @@
             config = 
             let
                 tbsm = self.packages.${pkgs.system}.tbsm;
+
+                nixToDesktopEntry = entry: (
+                    lib.attrsets.foldlAttrs (acc: name: value:
+                        acc + "${name}=${value}\n"
+                    ) "[Desktop Entry]\n" entry
+                );
+
+                # Check if each entry in `sessions` has `Name`
+                sessions =
+                    assert (builtins.all (session: builtins.hasAttr "Name" session) config.tbsm.sessions) || throw "some `tbsm.sessions` entry doesn't have a `Name` attribute which is required";
+                    config.tbsm.sessions;
+
+                # Check if `defaultSession` is defined in `sessions`
+                defaultSession = 
+                    assert (builtins.elem config.tbsm.defaultSession (map (session: session.Name) sessions)) || throw "`tbsm.defaultSession = \"${config.tbsm.defaultSession}\"` is not defined in `tbsm.sessions`";
+                    config.tbsm.defaultSession;
             in
             lib.mkIf config.tbsm.enable {
                 home.packages = [ tbsm ];
@@ -105,14 +121,12 @@
                 # Generate `.desktop` files from `config.tbsm.sessions`
                 } // builtins.foldl' (acc: entry:
                     acc // {
-                        ".config/tbsm/whitelist/${entry.Name}.desktop".text =
-                        lib.attrsets.foldlAttrs (acc: name: value:
-                            acc + "${name}=${value}\n"
-                        ) "[Desktop Entry]\n" entry;
+                        ".config/tbsm/whitelist/${entry.Name}.desktop".text = nixToDesktopEntry entry;
                     }
-                ) {} config.tbsm.sessions //
-                lib.attrsets.optionalAttrs (config.tbsm.defaultSession != null) {
-                    ".config/tbsm/000-default-session.desktop".source = "${config.home.homeDirectory}/.config/tbsm/whitelist/${config.tbsm.defaultSession}.desktop";
+                ) {} sessions //
+                # Set the default session if defined
+                lib.attrsets.optionalAttrs (defaultSession != null) {
+                    ".config/tbsm/000-default-session.desktop".text = nixToDesktopEntry (builtins.elemAt (builtins.filter (entry: entry.Name == defaultSession) sessions) 0);
                 };
             };
         };
