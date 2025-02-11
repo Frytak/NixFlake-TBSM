@@ -55,7 +55,7 @@ You will need to create `.desktop` entries at `~/.config/tbsm/whitelist`
         ];
     };
 
-    # Auto start TBSM in bash
+    # Auto start TBSM in bash (or in any other shell you like. WARNING! Launch tbsm with `${pkgs.bashInteractive}/bin/bash`, otherwise it may not work)
     programs.bash.initExtra = ''
         # Launch TBSM on specific TTYs after login
         if [ -z "$DISPLAY" ]; then
@@ -64,10 +64,10 @@ You will need to create `.desktop` entries at `~/.config/tbsm/whitelist`
 
             # If "all" is in the allowed_ttys list, launch on any TTY
             if echo "$allowed_ttys" | ${pkgs.gnugrep}/bin/grep -q "all"; then
-                exec ${inputs.tbsm.packages.${pkgs.system}.tbsm}/bin/tbsm </dev/tty >/dev/tty 2>&1
+                exec ${pkgs.bashInteractive}/bin/bash ${inputs.tbsm.packages.${pkgs.system}.tbsm}/bin/tbsm </dev/tty >/dev/tty 2>&1
             # If the current TTY is in the allowed list
             elif echo "$allowed_ttys" | ${pkgs.gnugrep}/bin/grep -q "$current_tty"; then
-                exec ${inputs.tbsm.packages.${pkgs.system}.tbsm}/bin/tbsm </dev/tty >/dev/tty 2>&1
+                exec ${pkgs.bashInteractive}/bin/bash ${inputs.tbsm.packages.${pkgs.system}.tbsm}/bin/tbsm </dev/tty >/dev/tty 2>&1
             fi
         fi
     '';

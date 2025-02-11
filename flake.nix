@@ -196,10 +196,10 @@
 
                         # If "all" is in the allowed_ttys list, launch on any TTY
                         if echo "$allowed_ttys" | grep -q "all"; then
-                            exec ${tbsm}/bin/tbsm </dev/tty >/dev/tty 2>&1
+                            exec ${pkgs.bashInteractive}/bin/bash ${tbsm}/bin/tbsm </dev/tty >/dev/tty 2>&1
                         # If the current TTY is in the allowed list
                         elif echo "$allowed_ttys" | grep -q "$current_tty"; then
-                            exec ${tbsm}/bin/tbsm </dev/tty >/dev/tty 2>&1
+                            exec ${pkgs.bashInteractive}/bin/bash ${tbsm}/bin/tbsm </dev/tty >/dev/tty 2>&1
                         fi
                     fi
                 '';
