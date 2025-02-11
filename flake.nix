@@ -118,8 +118,14 @@
                 # Set config file if not null
                 home.file = lib.attrsets.optionalAttrs (config.tbsm.config != null) {
                     ".config/tbsm/tbsm.conf".text = config.tbsm.config;
+                } //
+                # Create `blacklist` and `whitelist` directory
+                {
+                    ".config/tbsm/blacklist/.home-manager".text = "File to create the `blacklist` directory using home-manager. This is the easiest way I could think of doing it.";
+                    ".config/tbsm/whitelist/.home-manager".text = "File to create the `whitelist` directory using home-manager when there are no `sessions` entries. This is the easiest way I could think of doing it.";
+                } //
                 # Generate `.desktop` files from `config.tbsm.sessions`
-                } // builtins.foldl' (acc: entry:
+                builtins.foldl' (acc: entry:
                     acc // {
                         ".config/tbsm/whitelist/${entry.Name}.desktop".text = nixToDesktopEntry entry;
                     }
